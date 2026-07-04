@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# UV
+uv.lock
+
+# Intellij
+.idea/
+
+# Mac
+**.DS_Store
+
+content/problems/
+content/lists/complete_unsorted/
