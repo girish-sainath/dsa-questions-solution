@@ -9,7 +9,7 @@ from src.questions.get import get as get_question
 from src.solutions.generate import generate as generate_solution
 
 
-def get_question_and_solution(question_id: str, title: str):
+def get_question_and_solution(question_id: str, title: str) -> None:
     """
     Fetch the question using the provided question_id and title,
     then generate a solution for it.
@@ -50,23 +50,31 @@ def call_list_with_range(list_name: str, start: int, end: int) -> None:
         get_question_and_solution(question_id=question_id, title=title)
 
 
-def main():
+def main() -> None:
     """
     Main function to fetch a question and generate a solution for it.
     :return:
     """
-    exec_option = input("Do you want to execute a single question or a list of questions? (single/list): ").strip().lower()
+
+    default_list = []
+
+    exec_option = input('Do you want to execute a single question or a list of questions? (single/list/default): ').strip().lower()
     if exec_option == 'single':
-        question_id = input("Enter the question ID: ").strip()
-        title = input("Enter the question title: ").strip()
+        question_id = input('Enter the question ID: ').strip()
+        title = input('Enter the question title: ').strip()
         get_question_and_solution(question_id, title)
     elif exec_option == 'list':
-        list_name = input("Enter the list name: ").strip()
-        start = int(input("Enter the starting index (0-based): ").strip())
-        end = int(input("Enter the ending index (exclusive): ").strip())
+        list_name = input('Enter the list name: ').strip()
+        start = int(input('Enter the starting index (0-based): ').strip())
+        end = int(input('Enter the ending index (exclusive): ').strip())
         call_list_with_range(list_name=list_name, start=start, end=end)
+    elif exec_option == 'default':
+        for question_info in default_list:
+            question_id = str(question_info['id'])
+            title = question_info['title']
+            get_question_and_solution(question_id=question_id, title=title)
     else:
-        print("Invalid option. Please enter 'single' or 'list'.")
+        print('Invalid option. Please enter "single" or "list".')
 
 
 if __name__ == '__main__':

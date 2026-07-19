@@ -80,13 +80,23 @@ def _save_solution_to_file(question_id: str, title: str, llm_response) -> Path:
     problems_dir = Path(__file__).resolve().parents[2] / 'content' / 'problems'
     question_dir = problems_dir / file_name
 
-    solution_file_path = question_dir / 'solution.txt'
-    solution_file_path.write_text(response_text, encoding='utf-8')
+    generated_solution_dir = question_dir / 'generated'
+    generated_solution_dir.mkdir(parents=True, exist_ok=True)
 
-    solution_code_file_path = question_dir / 'solution.py'
-    solution_code_file_path.write_text(source_code, encoding='utf-8')
+    generated_solution_text_path = generated_solution_dir / 'solution.txt'
+    generated_solution_text_path.write_text(response_text, encoding='utf-8')
 
-    return solution_file_path
+    generated_solution_file_path = generated_solution_dir / 'solution.py'
+    generated_solution_file_path.write_text(source_code, encoding='utf-8')
+
+    solution_template_file_path = problems_dir / 'SolutionTemplate.py'
+    template_content = solution_template_file_path.read_text(encoding='utf-8')
+    template_content = template_content.replace('rename_this_method', title.replace(' ', '_').lower())
+
+    solution_code_file_path = question_dir / 'Solution.py'
+    solution_code_file_path.write_text(template_content, encoding='utf-8')
+
+    return question_dir
 
 
 def generate(question_id: str, title: str, question: str = None) -> None:
