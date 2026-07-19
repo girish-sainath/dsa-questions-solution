@@ -1,0 +1,74 @@
+from typing import List
+
+class Solution:
+    def findPeakElement(self, nums: List[int]) -> int:
+        """
+        Find a peak element using binary search.
+        
+        Args:
+            nums: List of integers where nums[i] != nums[i + 1]
+            
+        Returns:
+            Index of any peak element
+        """
+        left, right = 0, len(nums) - 1
+        
+        while left < right:
+            mid = left + (right - left) // 2
+            
+            if nums[mid] < nums[mid + 1]:
+                # We're on an ascending slope, peak is to the right
+                left = mid + 1
+            else:
+                # We're on a descending slope, peak is to the left (or at mid)
+                right = mid
+        
+        # left == right, we've found the peak
+        return left
+
+
+def main():
+    solution = Solution()
+    
+    # Test Case 1
+    nums1 = [1, 2, 3, 1]
+    result1 = solution.findPeakElement(nums1)
+    print(f"Input: {nums1}")
+    print(f"Output: {result1}")
+    print(f"Peak element: {nums1[result1]}")
+    print()
+    
+    # Test Case 2
+    nums2 = [1, 2, 1, 3, 5, 6, 4]
+    result2 = solution.findPeakElement(nums2)
+    print(f"Input: {nums2}")
+    print(f"Output: {result2}")
+    print(f"Peak element: {nums2[result2]}")
+    print()
+    
+    # Edge Case: Single element
+    nums3 = [1]
+    result3 = solution.findPeakElement(nums3)
+    print(f"Input: {nums3}")
+    print(f"Output: {result3}")
+    print(f"Peak element: {nums3[result3]}")
+    print()
+    
+    # Edge Case: Descending array
+    nums4 = [5, 4, 3, 2, 1]
+    result4 = solution.findPeakElement(nums4)
+    print(f"Input: {nums4}")
+    print(f"Output: {result4}")
+    print(f"Peak element: {nums4[result4]}")
+    print()
+    
+    # Edge Case: Ascending array
+    nums5 = [1, 2, 3, 4, 5]
+    result5 = solution.findPeakElement(nums5)
+    print(f"Input: {nums5}")
+    print(f"Output: {result5}")
+    print(f"Peak element: {nums5[result5]}")
+
+
+if __name__ == "__main__":
+    main()

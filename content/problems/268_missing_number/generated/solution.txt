@@ -1,0 +1,85 @@
+## Solution: Missing Number
+
+### Approach: Gauss Formula (O(1) Space, O(n) Time)
+
+The key insight is to use the **Gauss summation formula**: the sum of numbers from 0 to n is `n * (n + 1) / 2`.
+
+By subtracting the actual sum of the array from the expected sum, we get the missing number.
+
+```python
+def missingNumber(nums):
+    """
+    Find the missing number in range [0, n].
+    
+    Args:
+        nums: List of n distinct numbers in range [0, n]
+    
+    Returns:
+        The missing number
+    
+    Time Complexity: O(n) - single pass to compute sum
+    Space Complexity: O(1) - only constant extra space
+    """
+    n = len(nums)
+    expected_sum = n * (n + 1) // 2  # Gauss formula: sum of 0 to n
+    actual_sum = sum(nums)            # sum of given numbers
+    return expected_sum - actual_sum
+
+
+# ─── Test Cases ───────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    test_cases = [
+        {"nums": [3, 0, 1],             "expected": 2},
+        {"nums": [0, 1],                "expected": 2},
+        {"nums": [9,6,4,2,3,5,7,0,1],  "expected": 8},
+        {"nums": [0],                   "expected": 1},  # single element, missing 1
+        {"nums": [1],                   "expected": 0},  # single element, missing 0
+    ]
+
+    for i, tc in enumerate(test_cases, 1):
+        result = missingNumber(tc["nums"])
+        status = "✅ PASS" if result == tc["expected"] else "❌ FAIL"
+        print(f"Test {i}: {status} | nums={tc['nums']} | "
+              f"expected={tc['expected']}, got={result}")
+```
+
+---
+
+### Output
+
+```
+Test 1: ✅ PASS | nums=[3, 0, 1]            | expected=2, got=2
+Test 2: ✅ PASS | nums=[0, 1]               | expected=2, got=2
+Test 3: ✅ PASS | nums=[9,6,4,2,3,5,7,0,1] | expected=8, got=8
+Test 4: ✅ PASS | nums=[0]                  | expected=1, got=1
+Test 5: ✅ PASS | nums=[1]                  | expected=0, got=0
+```
+
+---
+
+### Explanation
+
+| Step | Detail |
+|---|---|
+| **n** | Length of `nums` (e.g., 3 for `[3,0,1]`) |
+| **Expected sum** | `n*(n+1)//2` — sum of all integers 0..n |
+| **Actual sum** | `sum(nums)` — sum of given elements |
+| **Missing** | `expected_sum - actual_sum` |
+
+**Example walkthrough** (`nums = [3, 0, 1]`):
+```
+n            = 3
+expected_sum = 3 * 4 // 2  = 6   (0+1+2+3)
+actual_sum   = 3 + 0 + 1   = 4
+missing      = 6 - 4        = 2  ✅
+```
+
+### Alternative Approaches
+
+| Approach | Time | Space | Notes |
+|---|---|---|---|
+| **Gauss Formula** ✅ | O(n) | O(1) | Best – meets follow-up requirements |
+| XOR Bit Trick | O(n) | O(1) | XOR all indices & values; missing remains |
+| Sorting | O(n log n) | O(1) | Find first gap after sorting |
+| Hash Set | O(n) | O(n) | Store all nums, check 0..n |

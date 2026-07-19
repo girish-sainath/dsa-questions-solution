@@ -1,0 +1,129 @@
+def insert(intervals, newInterval):
+    """
+    Insert a new interval into a sorted list of non-overlapping intervals,
+    merging any overlapping intervals as necessary.
+    
+    Args:
+        intervals: List of non-overlapping intervals sorted by start time
+        newInterval: New interval to insert [start, end]
+    
+    Returns:
+        List of merged intervals after insertion
+    """
+    result = []
+    i = 0
+    n = len(intervals)
+    
+    # Step 1: Add all intervals that come BEFORE the new interval (no overlap)
+    # An interval ends before newInterval starts: interval[end] < newInterval[start]
+    while i < n and intervals[i][1] < newInterval[0]:
+        result.append(intervals[i])
+        i += 1
+    
+    # Step 2: Merge all overlapping intervals with newInterval
+    # Overlap condition: interval[start] <= newInterval[end]
+    while i < n and intervals[i][0] <= newInterval[1]:
+        # Expand newInterval to cover both intervals
+        newInterval[0] = min(newInterval[0], intervals[i][0])
+        newInterval[1] = max(newInterval[1], intervals[i][1])
+        i += 1
+    
+    # Add the merged interval
+    result.append(newInterval)
+    
+    # Step 3: Add all remaining intervals that come AFTER the new interval
+    while i < n:
+        result.append(intervals[i])
+        i += 1
+    
+    return result
+
+
+# ==================== TEST CASES ====================
+
+def run_tests():
+    test_cases = [
+        {
+            "intervals": [[1,3],[6,9]],
+            "newInterval": [2,5],
+            "expected": [[1,5],[6,9]],
+            "description": "Basic overlap in middle"
+        },
+        {
+            "intervals": [[1,2],[3,5],[6,7],[8,10],[12,16]],
+            "newInterval": [4,8],
+            "expected": [[1,2],[3,10],[12,16]],
+            "description": "Multiple overlapping intervals"
+        },
+        {
+            "intervals": [],
+            "newInterval": [5,7],
+            "expected": [[5,7]],
+            "description": "Empty intervals list"
+        },
+        {
+            "intervals": [[1,5]],
+            "newInterval": [2,3],
+            "expected": [[1,5]],
+            "description": "New interval completely inside existing"
+        },
+        {
+            "intervals": [[1,5]],
+            "newInterval": [6,8],
+            "expected": [[1,5],[6,8]],
+            "description": "New interval after all existing"
+        },
+        {
+            "intervals": [[3,5],[6,9]],
+            "newInterval": [1,2],
+            "expected": [[1,2],[3,5],[6,9]],
+            "description": "New interval before all existing"
+        },
+        {
+            "intervals": [[1,3],[6,9]],
+            "newInterval": [2,10],
+            "expected": [[1,10]],
+            "description": "New interval covers all existing"
+        },
+        {
+            "intervals": [[1,2],[3,5]],
+            "newInterval": [2,3],
+            "expected": [[1,5]],
+            "description": "New interval bridges two intervals"
+        }
+    ]
+    
+    print("=" * 60)
+    print("Running Test Cases for Insert Interval")
+    print("=" * 60)
+    
+    passed = 0
+    failed = 0
+    
+    for i, test in enumerate(test_cases, 1):
+        intervals = [list(interval) for interval in test["intervals"]]  # Deep copy
+        new_interval = list(test["newInterval"])  # Copy to avoid mutation
+        
+        result = insert(intervals, new_interval)
+        expected = test["expected"]
+        
+        status = "✅ PASS" if result == expected else "❌ FAIL"
+        if result == expected:
+            passed += 1
+        else:
+            failed += 1
+        
+        print(f"\nTest {i}: {test['description']}")
+        print(f"  Input intervals : {test['intervals']}")
+        print(f"  New interval    : {test['newInterval']}")
+        print(f"  Expected        : {expected}")
+        print(f"  Got             : {result}")
+        print(f"  Status          : {status}")
+    
+    print("\n" + "=" * 60)
+    print(f"Results: {passed} passed, {failed} failed out of {len(test_cases)} tests")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    run_tests()

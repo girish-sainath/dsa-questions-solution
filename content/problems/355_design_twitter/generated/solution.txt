@@ -1,0 +1,160 @@
+## Solution
+
+### Approach
+- Use a global timestamp to track the order of tweets
+- Store tweets as a list of (timestamp, tweetId) tuples for each user
+- Store followers as a set for each user
+- For `getNewsFeed`, collect tweets from the user and all followed users, then use a heap to get the 10 most recent tweets
+
+### Code
+
+```python
+import heapq
+from collections import defaultdict
+from typing import List
+
+
+class Twitter:
+    """
+    A simplified Twitter implementation supporting:
+    - Post tweets
+    - Follow/Unfollow users
+    - Get news feed (10 most recent tweets from followed users + self)
+    """
+
+    def __init__(self):
+        """Initialize Twitter with empty data structures."""
+        self.timestamp = 0  # Global counter to track tweet order
+        self.tweets = defaultdict(list)  # userId -> list of (timestamp, tweetId)
+        self.following = defaultdict(set)  # userId -> set of followeeIds
+
+    def postTweet(self, userId: int, tweetId: int) -> None:
+        """
+        Post a tweet by userId with tweetId.
+        Time: O(1)
+        """
+        self.tweets[userId].append((self.timestamp, tweetId))
+        self.timestamp += 1
+
+    def getNewsFeed(self, userId: int) -> List[int]:
+        """
+        Get the 10 most recent tweet IDs in user's news feed.
+        
+        Strategy: Use a max-heap (negate timestamps for min-heap).
+        - Start with the most recent tweet from each relevant user
+        - Pop the most recent tweet, add to result
+        - Push the next tweet from the same user (if any)
+        
+        Time: O(F * log(F) + 10 * log(F)) where F is number of followed users
+        """
+        # Collect all relevant user IDs (self + following)
+        relevant_users = self.following[userId] | {userId}
+
+        # Max-heap using negative timestamps: (-timestamp, tweetId, userId, tweet_index)
+        # Initialize with the most recent tweet from each relevant user
+        heap = []
+        for uid in relevant_users:
+            user_tweets = self.tweets[uid]
+            if user_tweets:
+                # Start from the last (most recent) tweet
+                idx = len(user_tweets) - 1
+                timestamp, tweet_id = user_tweets[idx]
+                # Use negative timestamp for max-heap behavior
+                heapq.heappush(heap, (-timestamp, tweet_id, uid, idx - 1))
+
+        result = []
+        while heap and len(result) < 10:
+            neg_ts, tweet_id, uid, next_idx = heapq.heappop(heap)
+
+            result.append(tweet_id)
+
+            # If there are more tweets from this user, push the next one
+            if next_idx >= 0:
+                timestamp, next_tweet_id = self.tweets[uid][next_idx]
+                heapq.heappush(heap, (-timestamp, next_tweet_id, uid, next_idx - 1))
+
+        return result
+
+    def follow(self, followerId: int, followeeId: int) -> None:
+        """
+        followerId follows followeeId.
+        Time: O(1)
+        """
+        if followerId != followeeId:  # Cannot follow yourself
+            self.following[followerId].add(followeeId)
+
+    def unfollow(self, followerId: int, followeeId: int) -> None:
+        """
+        followerId unfollows followeeId.
+        Time: O(1)
+        """
+        self.following[followerId].discard(followeeId)  # discard won't raise error if not present
+
+
+# ==================== Testing ====================
+if __name__ == "__main__":
+    # Example from problem statement
+    twitter = Twitter()
+
+    twitter.postTweet(1, 5)
+    print(twitter.getNewsFeed(1))   # Expected: [5]
+
+    twitter.follow(1, 2)
+    twitter.postTweet(2, 6)
+    print(twitter.getNewsFeed(1))   # Expected: [6, 5]
+
+    twitter.unfollow(1, 2)
+    print(twitter.getNewsFeed(1))   # Expected: [5]
+
+    print("\n--- Additional Tests ---")
+
+    # Test with more than 10 tweets
+    twitter2 = Twitter()
+    for i in range(15):
+        twitter2.postTweet(1, i)
+    feed = twitter2.getNewsFeed(1)
+    print(f"Feed with 15 tweets (expect 10 most recent): {feed}")  # Expected: [14, 13, ..., 5]
+
+    # Test multiple users
+    twitter3 = Twitter()
+    twitter3.postTweet(1, 101)
+    twitter3.postTweet(2, 102)
+    twitter3.postTweet(3, 103)
+    twitter3.follow(1, 2)
+    twitter3.follow(1, 3)
+    feed = twitter3.getNewsFeed(1)
+    print(f"Feed following 2 users: {feed}")  # Expected: [103, 102, 101]
+
+    # Test unfollow edge case
+    twitter3.unfollow(1, 99)  # Unfollow non-existent, should not error
+    print("Unfollow non-existent user: OK")
+```
+
+### Output
+```
+[5]
+[6, 5]
+[5]
+
+--- Additional Tests ---
+Feed with 15 tweets (expect 10 most recent): [14, 13, 12, 11, 10, 9, 8, 7, 6, 5]
+Feed following 2 users: [103, 102, 101]
+Unfollow non-existent user: OK
+```
+
+### Complexity Analysis
+
+| Operation | Time | Space |
+|-----------|------|-------|
+| `postTweet` | O(1) | O(1) per tweet |
+| `getNewsFeed` | O(F·log F + 10·log F) | O(F) for heap |
+| `follow` | O(1) | O(1) |
+| `unfollow` | O(1) | O(1) |
+
+Where **F** = number of users followed.
+
+### Key Design Decisions
+1. **Global timestamp**: Simple counter ensures total ordering of all tweets
+2. **Per-user tweet list**: Allows efficient traversal from most recent to oldest
+3. **Heap-based merge**: Efficiently merges sorted tweet lists from multiple users without loading all tweets into memory
+4. **Set for following**: O(1) add/remove/lookup operations

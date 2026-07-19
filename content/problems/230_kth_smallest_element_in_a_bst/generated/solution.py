@@ -1,0 +1,147 @@
+from typing import Optional
+
+# Definition for a binary tree node
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+class Solution:
+    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:
+        """
+        Iterative in-order traversal approach.
+        Time Complexity: O(H + k) where H is the height of the tree
+        Space Complexity: O(H) for the stack
+        """
+        stack = []
+        current = root
+        count = 0
+
+        while current or stack:
+            # Traverse to the leftmost node
+            while current:
+                stack.append(current)
+                current = current.left
+
+            # Process the node
+            current = stack.pop()
+            count += 1
+
+            # If this is the kth element, return it
+            if count == k:
+                return current.val
+
+            # Move to the right subtree
+            current = current.right
+
+        return -1  # Should never reach here given valid input
+
+    def kthSmallest_recursive(self, root: Optional[TreeNode], k: int) -> int:
+        """
+        Recursive in-order traversal approach.
+        Time Complexity: O(N) - visits all nodes in worst case
+        Space Complexity: O(N) for the result list + recursion stack
+        """
+        result = []
+
+        def inorder(node):
+            if not node:
+                return
+            inorder(node.left)
+            result.append(node.val)
+            inorder(node.right)
+
+        inorder(root)
+        return result[k - 1]  # k is 1-indexed
+
+
+# ==================== Helper Functions ====================
+
+def build_tree(values: list) -> Optional[TreeNode]:
+    """Builds a binary tree from a list (level-order representation)."""
+    if not values or values[0] is None:
+        return None
+
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+
+    while queue and i < len(values):
+        node = queue.pop(0)
+
+        # Left child
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+
+        # Right child
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+
+    return root
+
+
+# ==================== Test Cases ====================
+
+def run_tests():
+    solution = Solution()
+
+    test_cases = [
+        {
+            "description": "Example 1: Basic BST, k=1",
+            "tree": [3, 1, 4, None, 2],
+            "k": 1,
+            "expected": 1
+        },
+        {
+            "description": "Example 2: Larger BST, k=3",
+            "tree": [5, 3, 6, 2, 4, None, None, 1],
+            "k": 3,
+            "expected": 3
+        },
+        {
+            "description": "Single node, k=1",
+            "tree": [1],
+            "k": 1,
+            "expected": 1
+        },
+        {
+            "description": "BST with k equal to last element",
+            "tree": [3, 1, 4, None, 2],
+            "k": 4,
+            "expected": 4
+        },
+        {
+            "description": "Left-skewed BST",
+            "tree": [5, 4, None, 3, None, 2, None, 1],
+            "k": 2,
+            "expected": 2
+        },
+    ]
+
+    print("=" * 60)
+    print("Testing Kth Smallest Element in BST")
+    print("=" * 60)
+
+    for i, test in enumerate(test_cases, 1):
+        root = build_tree(test["tree"])
+
+        result_iterative = solution.kthSmallest(root, test["k"])
+        result_recursive = solution.kthSmallest_recursive(root, test["k"])
+
+        status = "✅ PASS" if result_iterative == test["expected"] else "❌ FAIL"
+
+        print(f"\nTest {i}: {test['description']}")
+        print(f"  Tree: {test['tree']}, k={test['k']}")
+        print(f"  Expected:  {test['expected']}")
+        print(f"  Iterative: {result_iterative} {status}")
+        print(f"  Recursive: {result_recursive} {'✅ PASS' if result_recursive == test['expected'] else '❌ FAIL'}")
+
+
+if __name__ == "__main__":
+    run_tests()

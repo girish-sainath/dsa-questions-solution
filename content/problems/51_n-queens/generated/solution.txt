@@ -1,0 +1,118 @@
+## N-Queens Solution
+
+### Approach
+We use **backtracking** to place queens row by row. For each row, we try placing a queen in each column and check if it's safe (no conflicts with previously placed queens). We track:
+- `cols`: columns already occupied
+- `diag1`: occupied main diagonals (row - col is constant)
+- `diag2`: occupied anti-diagonals (row + col is constant)
+
+### Code
+
+```python
+from typing import List
+
+class Solution:
+    def solveNQueens(self, n: int) -> List[List[str]]:
+        results = []
+        # Track occupied columns and diagonals
+        cols = set()
+        diag1 = set()  # top-left to bottom-right (row - col)
+        diag2 = set()  # top-right to bottom-left (row + col)
+        
+        # queens[i] = column position of queen in row i
+        queens = []
+        
+        def backtrack(row: int):
+            # Base case: all queens placed successfully
+            if row == n:
+                # Build board from queens placement
+                board = []
+                for col in queens:
+                    board.append('.' * col + 'Q' + '.' * (n - col - 1))
+                results.append(board)
+                return
+            
+            # Try placing queen in each column of current row
+            for col in range(n):
+                # Skip if column or diagonal is already occupied
+                if col in cols or (row - col) in diag1 or (row + col) in diag2:
+                    continue
+                
+                # Place queen
+                cols.add(col)
+                diag1.add(row - col)
+                diag2.add(row + col)
+                queens.append(col)
+                
+                # Recurse to next row
+                backtrack(row + 1)
+                
+                # Remove queen (backtrack)
+                cols.remove(col)
+                diag1.remove(row - col)
+                diag2.remove(row + col)
+                queens.pop()
+        
+        backtrack(0)
+        return results
+
+
+# ------------------- Test Cases -------------------
+if __name__ == "__main__":
+    solution = Solution()
+    
+    # Test Case 1: n = 4
+    n = 4
+    result = solution.solveNQueens(n)
+    print(f"n = {n}: {len(result)} solutions found")
+    for board in result:
+        for row in board:
+            print(f"  {row}")
+        print()
+    
+    # Test Case 2: n = 1
+    n = 1
+    result = solution.solveNQueens(n)
+    print(f"n = {n}: {len(result)} solutions found")
+    for board in result:
+        for row in board:
+            print(f"  {row}")
+        print()
+    
+    # Test Case 3: n = 8 (classic 8-queens problem)
+    n = 8
+    result = solution.solveNQueens(n)
+    print(f"n = {n}: {len(result)} solutions found")
+```
+
+### Output
+```
+n = 4: 2 solutions found
+  .Q..
+  ...Q
+  Q...
+  ..Q.
+
+  ..Q.
+  Q...
+  ...Q
+  .Q..
+
+n = 1: 1 solutions found
+  Q
+
+n = 8: 92 solutions found
+```
+
+### Explanation
+
+| Step | Description |
+|------|-------------|
+| **Row-by-row placement** | We place exactly one queen per row, eliminating row conflicts |
+| **Column tracking** | `cols` set ensures no two queens share a column |
+| **Diagonal tracking** | `diag1` (row-col) tracks `\` diagonals; `diag2` (row+col) tracks `/` diagonals |
+| **Backtracking** | If no valid column exists in current row, we backtrack to previous row |
+
+### Complexity
+- **Time**: O(N!) — at most N choices for row 0, N-1 for row 1, etc.
+- **Space**: O(N) — recursion depth + sets for tracking conflicts

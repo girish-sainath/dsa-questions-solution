@@ -1,0 +1,115 @@
+## Word Ladder Solution
+
+### Approach: Breadth-First Search (BFS)
+
+The key insight is to use BFS to find the shortest path from `beginWord` to `endWord`. At each step, we try changing each character of the current word to every possible letter and check if the resulting word exists in our word list.
+
+### Algorithm:
+1. Add `beginWord` to the queue with distance 1
+2. For each word in queue, try all possible one-letter transformations
+3. If transformed word equals `endWord`, return current distance + 1
+4. If transformed word is in `wordList`, add to queue and remove from word set
+5. If queue is empty without finding `endWord`, return 0
+
+### Code:
+
+```python
+from collections import deque
+from typing import List
+
+
+def ladderLength(beginWord: str, endWord: str, wordList: List[str]) -> int:
+    """
+    Find the length of shortest transformation sequence from beginWord to endWord.
+    
+    Args:
+        beginWord: Starting word
+        endWord: Target word
+        wordList: List of valid intermediate words
+        
+    Returns:
+        Length of shortest transformation sequence, or 0 if none exists
+    """
+    # Convert wordList to a set for O(1) lookup
+    word_set = set(wordList)
+    
+    # If endWord is not in wordList, no valid transformation exists
+    if endWord not in word_set:
+        return 0
+    
+    # BFS queue: stores (current_word, current_length)
+    queue = deque([(beginWord, 1)])
+    
+    # Track visited words to avoid cycles
+    visited = {beginWord}
+    
+    while queue:
+        current_word, length = queue.popleft()
+        
+        # Try changing each character position
+        for i in range(len(current_word)):
+            # Try all 26 possible letters
+            for char in 'abcdefghijklmnopqrstuvwxyz':
+                # Skip if same character
+                if char == current_word[i]:
+                    continue
+                
+                # Create new word with one character changed
+                next_word = current_word[:i] + char + current_word[i+1:]
+                
+                # Found the endWord
+                if next_word == endWord:
+                    return length + 1
+                
+                # Add to queue if valid and not visited
+                if next_word in word_set and next_word not in visited:
+                    visited.add(next_word)
+                    queue.append((next_word, length + 1))
+    
+    # No transformation sequence found
+    return 0
+
+
+# Test cases
+if __name__ == "__main__":
+    # Example 1
+    beginWord1 = "hit"
+    endWord1 = "cog"
+    wordList1 = ["hot", "dot", "dog", "lot", "log", "cog"]
+    result1 = ladderLength(beginWord1, endWord1, wordList1)
+    print(f"Example 1: {result1}")  # Expected: 5
+    
+    # Example 2
+    beginWord2 = "hit"
+    endWord2 = "cog"
+    wordList2 = ["hot", "dot", "dog", "lot", "log"]
+    result2 = ladderLength(beginWord2, endWord2, wordList2)
+    print(f"Example 2: {result2}")  # Expected: 0
+    
+    # Additional test case
+    beginWord3 = "a"
+    endWord3 = "c"
+    wordList3 = ["a", "b", "c"]
+    result3 = ladderLength(beginWord3, endWord3, wordList3)
+    print(f"Example 3: {result3}")  # Expected: 2
+```
+
+### Output:
+```
+Example 1: 5
+Example 2: 0
+Example 3: 2
+```
+
+### Complexity Analysis:
+
+| Complexity | Value | Explanation |
+|------------|-------|-------------|
+| **Time** | O(M² × N) | M = word length, N = number of words. For each word, we try M positions × 26 chars, and string slicing takes O(M) |
+| **Space** | O(M × N) | Queue and visited set can store at most N words, each of length M |
+
+### Key Points:
+- **Converting to set**: Enables O(1) word lookup instead of O(N)
+- **Visited set**: Prevents revisiting words and infinite loops
+- **BFS guarantee**: First time we reach `endWord` is via the shortest path
+- **Early termination**: Check for `endWord` in wordList upfront to avoid unnecessary BFS

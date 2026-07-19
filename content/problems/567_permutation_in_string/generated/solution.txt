@@ -1,0 +1,104 @@
+## Solution: Permutation in String
+
+### Approach: Sliding Window with Character Frequency Count
+
+The key insight is that a permutation of `s1` is a substring of `s2` if and only if there exists a window in `s2` of the same length as `s1` that has the same character frequencies as `s1`.
+
+We use a sliding window of size `len(s1)` over `s2` and compare character counts.
+
+### Code
+
+```python
+from collections import Counter
+
+class Solution:
+    def checkInclusion(self, s1: str, s2: str) -> bool:
+        """
+        Check if any permutation of s1 exists as a substring in s2.
+        
+        Args:
+            s1: The pattern string
+            s2: The string to search in
+            
+        Returns:
+            True if s2 contains a permutation of s1, False otherwise
+        """
+        len1, len2 = len(s1), len(s2)
+        
+        # Edge case: s1 is longer than s2
+        if len1 > len2:
+            return False
+        
+        # Initialize frequency counts for s1 and the first window of s2
+        s1_count = Counter(s1)
+        window_count = Counter(s2[:len1])
+        
+        # Check if the first window matches
+        if s1_count == window_count:
+            return True
+        
+        # Slide the window across s2
+        for i in range(len1, len2):
+            # Add new character entering the window
+            new_char = s2[i]
+            window_count[new_char] += 1
+            
+            # Remove character leaving the window
+            old_char = s2[i - len1]
+            window_count[old_char] -= 1
+            
+            # Clean up zero counts to allow accurate comparison
+            if window_count[old_char] == 0:
+                del window_count[old_char]
+            
+            # Check if current window matches s1's frequency
+            if s1_count == window_count:
+                return True
+        
+        return False
+
+
+# -------------------------
+# Test Cases
+# -------------------------
+if __name__ == "__main__":
+    solution = Solution()
+    
+    test_cases = [
+        ("ab", "eidbaooo", True),   # "ba" is a permutation of "ab"
+        ("ab", "eidboaoo", False),  # No permutation of "ab" in s2
+        ("a", "a", True),           # Single char match
+        ("abc", "bbbca", True),     # "bca" is a permutation
+        ("hello", "ooolleoooleh", False),  # No valid permutation window
+        ("adc", "dcda", True),      # "cda" or "dca" matches
+    ]
+    
+    for i, (s1, s2, expected) in enumerate(test_cases):
+        result = solution.checkInclusion(s1, s2)
+        status = "✅ PASS" if result == expected else "❌ FAIL"
+        print(f"Test {i+1}: s1='{s1}', s2='{s2}' => {result} (Expected: {expected}) {status}")
+```
+
+### Output
+```
+Test 1: s1='ab', s2='eidbaooo' => True (Expected: True) ✅ PASS
+Test 2: s1='ab', s2='eidboaoo' => False (Expected: False) ✅ PASS
+Test 3: s1='a', s2='a' => True (Expected: True) ✅ PASS
+Test 4: s1='abc', s2='bbbca' => True (Expected: True) ✅ PASS
+Test 5: s1='hello', s2='ooolleoooleh' => False (Expected: False) ✅ PASS
+Test 6: s1='adc', s2='dcda' => True (Expected: True) ✅ PASS
+```
+
+### Explanation
+
+| Step | Description |
+|------|-------------|
+| 1 | Count character frequencies in `s1` |
+| 2 | Initialize a sliding window of size `len(s1)` over `s2` |
+| 3 | At each step, add the new character and remove the old character |
+| 4 | Compare window frequency with `s1` frequency |
+
+### Complexity Analysis
+
+- **Time Complexity:** `O(n)` where `n = len(s2)` — we slide the window once
+- **Space Complexity:** `O(1)` — at most 26 lowercase letters stored in the Counter

@@ -1,0 +1,134 @@
+## Solution: Next Greater Element I
+
+### Approach
+We use a **monotonic stack** to efficiently find the next greater element for each number in `nums2`. 
+
+The key insight is:
+1. Iterate through `nums2` using a stack that maintains elements in decreasing order
+2. When we find a greater element, it becomes the "next greater element" for all smaller elements in the stack
+3. Store results in a hashmap for O(1) lookup when processing `nums1`
+
+### Algorithm
+1. Initialize an empty stack and a hashmap `next_greater`
+2. For each number in `nums2`:
+   - While stack is not empty AND current number > stack's top element:
+     - Pop from stack → this current number is its next greater element
+     - Record in hashmap
+   - Push current number to stack
+3. Any remaining elements in stack have no next greater element → map to -1
+4. For each element in `nums1`, look up the hashmap
+
+### Code
+
+```python
+from typing import List
+
+class Solution:
+    def nextGreaterElement(self, nums1: List[int], nums2: List[int]) -> List[int]:
+        """
+        Find next greater element for each element in nums1 using nums2.
+        
+        Args:
+            nums1: Query array (subset of nums2)
+            nums2: Main array to find next greater elements in
+            
+        Returns:
+            List of next greater elements for each element in nums1
+        """
+        # HashMap to store next greater element for each number in nums2
+        next_greater = {}
+        
+        # Monotonic decreasing stack
+        stack = []
+        
+        for num in nums2:
+            # While stack has elements and current num is greater than top of stack
+            # Current num is the "next greater element" for the top of stack
+            while stack and num > stack[-1]:
+                popped = stack.pop()
+                next_greater[popped] = num
+            
+            stack.append(num)
+        
+        # Remaining elements in stack have no next greater element
+        while stack:
+            next_greater[stack.pop()] = -1
+        
+        # Build result for nums1 using the hashmap
+        return [next_greater[num] for num in nums1]
+
+
+# ============= Test Cases =============
+def test_solution():
+    sol = Solution()
+    
+    # Test Case 1
+    nums1 = [4, 1, 2]
+    nums2 = [1, 3, 4, 2]
+    result = sol.nextGreaterElement(nums1, nums2)
+    print(f"Input: nums1={nums1}, nums2={nums2}")
+    print(f"Output: {result}")
+    print(f"Expected: [-1, 3, -1]")
+    print(f"Pass: {result == [-1, 3, -1]}\n")
+    
+    # Test Case 2
+    nums1 = [2, 4]
+    nums2 = [1, 2, 3, 4]
+    result = sol.nextGreaterElement(nums1, nums2)
+    print(f"Input: nums1={nums1}, nums2={nums2}")
+    print(f"Output: {result}")
+    print(f"Expected: [3, -1]")
+    print(f"Pass: {result == [3, -1]}\n")
+    
+    # Test Case 3: Single element
+    nums1 = [1]
+    nums2 = [1]
+    result = sol.nextGreaterElement(nums1, nums2)
+    print(f"Input: nums1={nums1}, nums2={nums2}")
+    print(f"Output: {result}")
+    print(f"Expected: [-1]")
+    print(f"Pass: {result == [-1]}\n")
+    
+    # Test Case 4: All elements have next greater
+    nums1 = [1, 2, 3]
+    nums2 = [1, 2, 3, 4]
+    result = sol.nextGreaterElement(nums1, nums2)
+    print(f"Input: nums1={nums1}, nums2={nums2}")
+    print(f"Output: {result}")
+    print(f"Expected: [2, 3, 4]")
+    print(f"Pass: {result == [2, 3, 4]}\n")
+
+test_solution()
+```
+
+### Output
+```
+Input: nums1=[4, 1, 2], nums2=[1, 3, 4, 2]
+Output: [-1, 3, -1]
+Expected: [-1, 3, -1]
+Pass: True
+
+Input: nums1=[2, 4], nums2=[1, 2, 3, 4]
+Output: [3, -1]
+Expected: [3, -1]
+Pass: True
+
+Input: nums1=[1], nums2=[1]
+Output: [-1]
+Expected: [-1]
+Pass: True
+
+Input: nums1=[1, 2, 3], nums2=[1, 2, 3, 4]
+Output: [2, 3, 4]
+Expected: [2, 3, 4]
+Pass: True
+```
+
+### Complexity Analysis
+
+| Complexity | Value | Reason |
+|-----------|-------|--------|
+| **Time** | O(m + n) | Each element in `nums2` is pushed/popped once; lookup for `nums1` is O(1) per element |
+| **Space** | O(n) | Stack and hashmap store at most `n` elements from `nums2` |
+
+Where `n = len(nums2)` and `m = len(nums1)`

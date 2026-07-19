@@ -1,0 +1,171 @@
+# Binary Tree Level Order Traversal
+
+## Approach
+We'll use **Breadth-First Search (BFS)** with a queue to traverse the tree level by level.
+
+**Algorithm:**
+1. If root is None, return empty list
+2. Initialize a queue with the root node
+3. For each level, process all nodes currently in the queue
+4. Add their values to current level list
+5. Enqueue their children for next level processing
+6. Continue until queue is empty
+
+## Solution
+
+```python
+from collections import deque
+from typing import Optional, List
+
+
+# Definition for a binary tree node.
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+class Solution:
+    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        # If tree is empty, return empty list
+        if not root:
+            return []
+        
+        result = []
+        queue = deque([root])  # Initialize queue with root node
+        
+        while queue:
+            level_size = len(queue)  # Number of nodes at current level
+            current_level = []
+            
+            # Process all nodes at current level
+            for _ in range(level_size):
+                node = queue.popleft()  # Dequeue front node
+                current_level.append(node.val)  # Add value to current level
+                
+                # Enqueue left child if exists
+                if node.left:
+                    queue.append(node.left)
+                
+                # Enqueue right child if exists
+                if node.right:
+                    queue.append(node.right)
+            
+            result.append(current_level)  # Add current level to result
+        
+        return result
+
+
+# ==================== Helper Functions ====================
+
+def build_tree(values: List) -> Optional[TreeNode]:
+    """Build a binary tree from a list representation (BFS order)."""
+    if not values or values[0] is None:
+        return None
+    
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    
+    while queue and i < len(values):
+        node = queue.popleft()
+        
+        # Assign left child
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        
+        # Assign right child
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    
+    return root
+
+
+# ==================== Test Cases ====================
+
+def run_tests():
+    solution = Solution()
+    
+    test_cases = [
+        {
+            "description": "Example 1: Regular tree",
+            "input": [3, 9, 20, None, None, 15, 7],
+            "expected": [[3], [9, 20], [15, 7]]
+        },
+        {
+            "description": "Example 2: Single node",
+            "input": [1],
+            "expected": [[1]]
+        },
+        {
+            "description": "Example 3: Empty tree",
+            "input": [],
+            "expected": []
+        },
+        {
+            "description": "Complete binary tree",
+            "input": [1, 2, 3, 4, 5, 6, 7],
+            "expected": [[1], [2, 3], [4, 5, 6, 7]]
+        },
+        {
+            "description": "Left skewed tree",
+            "input": [1, 2, None, 3, None, 4],
+            "expected": [[1], [2], [3], [4]]
+        }
+    ]
+    
+    for test in test_cases:
+        root = build_tree(test["input"])
+        output = solution.levelOrder(root)
+        status = "✅ PASSED" if output == test["expected"] else "❌ FAILED"
+        print(f"{status} | {test['description']}")
+        print(f"         Input:    {test['input']}")
+        print(f"         Expected: {test['expected']}")
+        print(f"         Output:   {output}")
+        print()
+
+
+if __name__ == "__main__":
+    run_tests()
+```
+
+## Output
+```
+✅ PASSED | Example 1: Regular tree
+         Input:    [3, 9, 20, None, None, 15, 7]
+         Expected: [[3], [9, 20], [15, 7]]
+         Output:   [[3], [9, 20], [15, 7]]
+
+✅ PASSED | Example 2: Single node
+         Input:    [1]
+         Expected: [[1]]
+         Output:   [[1]]
+
+✅ PASSED | Example 3: Empty tree
+         Input:    []
+         Expected: []
+         Output:   []
+
+✅ PASSED | Complete binary tree
+         Input:    [1, 2, 3, 4, 5, 6, 7]
+         Expected: [[1], [2, 3], [4, 5, 6, 7]]
+         Output:   [[1], [2, 3], [4, 5, 6, 7]]
+
+✅ PASSED | Left skewed tree
+         Input:    [1, 2, None, 3, None, 4]
+         Expected: [[1], [2], [3], [4]]
+         Output:   [[1], [2], [3], [4]]
+```
+
+## Complexity Analysis
+| | Complexity |
+|---|---|
+| **Time** | O(n) - each node is visited exactly once |
+| **Space** | O(w) - where w is the maximum width of the tree (queue size) |
+
+> In the worst case (complete binary tree), the last level can have **n/2** nodes, making space complexity **O(n)**

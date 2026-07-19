@@ -1,0 +1,192 @@
+from collections import deque
+from typing import Optional
+
+# Definition for a binary tree node.
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Codec:
+    
+    def serialize(self, root: Optional[TreeNode]) -> str:
+        """
+        Encodes a tree to a single string using preorder traversal.
+        
+        Time Complexity: O(n) - visits each node once
+        Space Complexity: O(n) - stores all node values
+        """
+        result = []
+        
+        def preorder(node):
+            if node is None:
+                result.append('#')  # null marker
+                return
+            result.append(str(node.val))  # append current node value
+            preorder(node.left)           # traverse left subtree
+            preorder(node.right)          # traverse right subtree
+        
+        preorder(root)
+        return ','.join(result)
+    
+    def deserialize(self, data: str) -> Optional[TreeNode]:
+        """
+        Decodes encoded data to tree using preorder reconstruction.
+        
+        Time Complexity: O(n) - processes each token once
+        Space Complexity: O(n) - queue stores all tokens
+        """
+        if not data:
+            return None
+        
+        # Use deque for O(1) popleft operations
+        tokens = deque(data.split(','))
+        
+        def build_tree():
+            token = tokens.popleft()
+            
+            if token == '#':
+                return None  # null node
+            
+            node = TreeNode(int(token))
+            node.left = build_tree()   # reconstruct left subtree
+            node.right = build_tree()  # reconstruct right subtree
+            return node
+        
+        return build_tree()
+
+
+# ==================== Helper Functions ====================
+
+def build_tree_from_list(values: list) -> Optional[TreeNode]:
+    """Build a binary tree from LeetCode-style level order list."""
+    if not values or values[0] is None:
+        return None
+    
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    
+    while queue and i < len(values):
+        node = queue.popleft()
+        
+        # Left child
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        
+        # Right child
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    
+    return root
+
+def tree_to_list(root: Optional[TreeNode]) -> list:
+    """Convert binary tree to LeetCode-style level order list."""
+    if not root:
+        return []
+    
+    result = []
+    queue = deque([root])
+    
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    
+    # Remove trailing None values
+    while result and result[-1] is None:
+        result.pop()
+    
+    return result
+
+def print_tree(root: Optional[TreeNode], level: int = 0, prefix: str = "Root: ") -> None:
+    """Pretty print the binary tree."""
+    if root is not None:
+        print(" " * (level * 4) + prefix + str(root.val))
+        if root.left is not None or root.right is not None:
+            if root.left:
+                print_tree(root.left, level + 1, "L--- ")
+            else:
+                print(" " * ((level + 1) * 4) + "L--- None")
+            if root.right:
+                print_tree(root.right, level + 1, "R--- ")
+            else:
+                print(" " * ((level + 1) * 4) + "R--- None")
+
+
+# ==================== Test Cases ====================
+
+def run_tests():
+    codec = Codec()
+    
+    test_cases = [
+        {
+            "name": "Example 1 - Normal tree",
+            "input": [1, 2, 3, None, None, 4, 5]
+        },
+        {
+            "name": "Example 2 - Empty tree",
+            "input": []
+        },
+        {
+            "name": "Single node",
+            "input": [1]
+        },
+        {
+            "name": "Left-skewed tree",
+            "input": [1, 2, None, 3, None, 4]
+        },
+        {
+            "name": "Right-skewed tree",
+            "input": [1, None, 2, None, 3, None, 4]
+        },
+        {
+            "name": "Complete binary tree",
+            "input": [1, 2, 3, 4, 5, 6, 7]
+        },
+        {
+            "name": "Tree with negative values",
+            "input": [-1, -2, -3, None, None, -4, -5]
+        }
+    ]
+    
+    for test in test_cases:
+        print(f"\n{'='*55}")
+        print(f"Test: {test['name']}")
+        print(f"Input: {test['input']}")
+        
+        # Build original tree
+        original_tree = build_tree_from_list(test['input'])
+        
+        if original_tree:
+            print("\nOriginal Tree Structure:")
+            print_tree(original_tree)
+        
+        # Serialize
+        serialized = codec.serialize(original_tree)
+        print(f"\nSerialized: \"{serialized}\"")
+        
+        # Deserialize
+        deserialized_tree = codec.deserialize(serialized)
+        
+        # Re-serialize to verify
+        re_serialized = codec.serialize(deserialized_tree)
+        
+        # Convert to list for comparison
+        output_list = tree_to_list(deserialized_tree)
+        print(f"Deserialized Output: {output_list}")
+        
+        # Verify correctness
+        is_correct = serialized == re_serialized
+        print(f"✓ Serialization matches: {is_correct}")
+
+run_tests()

@@ -1,0 +1,196 @@
+# Find Smallest Common Element in All Rows
+
+## Problem Description
+
+Given an `m x n` matrix `mat` where every row is sorted in **strictly increasing** order, return the **smallest common element** in all rows.
+
+If there is no common element, return `-1`.
+
+## Approach
+
+### Method: Count Frequency Using HashMap
+
+Since every row is sorted and contains distinct elements (strictly increasing), we can:
+1. Count the frequency of each element across all rows
+2. Find the smallest element that appears in all `m` rows (frequency = m)
+
+**Time Complexity:** O(m × n)  
+**Space Complexity:** O(m × n)
+
+## Solution
+
+```python
+from typing import List
+from collections import defaultdict
+
+def smallestCommonElement(mat: List[List[int]]) -> int:
+    """
+    Find the smallest common element in all rows of the matrix.
+    
+    Args:
+        mat: m x n matrix where every row is sorted in strictly increasing order
+        
+    Returns:
+        Smallest common element, or -1 if none exists
+    """
+    m = len(mat)       # number of rows
+    n = len(mat[0])    # number of columns
+    
+    # Count frequency of each element across all rows
+    count = defaultdict(int)
+    
+    for row in mat:
+        for num in row:
+            count[num] += 1
+            # Early termination: if element appears in all rows, return it
+            # Since rows are sorted, we process in increasing order per row
+            # but we need the global minimum, so we check after counting all
+    
+    # Find the smallest element with frequency equal to m (number of rows)
+    # Iterate through first row (sorted) to find smallest common element efficiently
+    for num in mat[0]:
+        if count[num] == m:
+            return num
+    
+    return -1
+
+
+# Alternative Method: Binary Search
+def smallestCommonElementBinarySearch(mat: List[List[int]]) -> int:
+    """
+    Find the smallest common element using binary search.
+    
+    For each element in the first row, binary search for it in all other rows.
+    Since first row is sorted, the first match found will be the smallest.
+    
+    Time Complexity: O(m * n * log(n))
+    Space Complexity: O(1)
+    """
+    import bisect
+    
+    m = len(mat)
+    n = len(mat[0])
+    
+    # Iterate through first row (sorted ascending)
+    for num in mat[0]:
+        found_in_all = True
+        
+        # Binary search for num in every other row
+        for i in range(1, m):
+            pos = bisect.bisect_left(mat[i], num)
+            # Check if num exists at the found position
+            if pos == n or mat[i][pos] != num:
+                found_in_all = False
+                break
+        
+        if found_in_all:
+            return num
+    
+    return -1
+
+
+# Test cases
+def run_tests():
+    test_cases = [
+        {
+            "mat": [
+                [1, 2, 3, 4, 5],
+                [2, 4, 5, 8, 10],
+                [3, 5, 7, 9, 11],
+                [1, 3, 5, 7, 9]
+            ],
+            "expected": 5
+        },
+        {
+            "mat": [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ],
+            "expected": -1
+        },
+        {
+            "mat": [
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5]
+            ],
+            "expected": 1
+        },
+        {
+            "mat": [
+                [1, 10, 100],
+                [1, 10, 100],
+                [1, 10, 100]
+            ],
+            "expected": 1
+        },
+        {
+            "mat": [
+                [5]
+            ],
+            "expected": 5
+        }
+    ]
+    
+    print("=" * 60)
+    print("Testing HashMap Approach:")
+    print("=" * 60)
+    for i, tc in enumerate(test_cases):
+        result = smallestCommonElement(tc["mat"])
+        status = "✅ PASS" if result == tc["expected"] else "❌ FAIL"
+        print(f"Test {i+1}: {status} | Result: {result} | Expected: {tc['expected']}")
+    
+    print()
+    print("=" * 60)
+    print("Testing Binary Search Approach:")
+    print("=" * 60)
+    for i, tc in enumerate(test_cases):
+        result = smallestCommonElementBinarySearch(tc["mat"])
+        status = "✅ PASS" if result == tc["expected"] else "❌ FAIL"
+        print(f"Test {i+1}: {status} | Result: {result} | Expected: {tc['expected']}")
+
+
+if __name__ == "__main__":
+    run_tests()
+```
+
+## Output
+
+```
+============================================================
+Testing HashMap Approach:
+============================================================
+Test 1: ✅ PASS | Result: 5 | Expected: 5
+Test 2: ✅ PASS | Result: -1 | Expected: -1
+Test 3: ✅ PASS | Result: 1 | Expected: 1
+Test 4: ✅ PASS | Result: 1 | Expected: 1
+Test 5: ✅ PASS | Result: 5 | Expected: 5
+
+============================================================
+Testing Binary Search Approach:
+============================================================
+Test 1: ✅ PASS | Result: 5 | Expected: 5
+Test 2: ✅ PASS | Result: -1 | Expected: -1
+Test 3: ✅ PASS | Result: 1 | Expected: 1
+Test 4: ✅ PASS | Result: 1 | Expected: 1
+Test 5: ✅ PASS | Result: 5 | Expected: 5
+```
+
+## Explanation
+
+### HashMap Approach
+| Step | Action |
+|------|--------|
+| 1 | Count frequency of every element across all rows |
+| 2 | Iterate through the **first row** (sorted) to find the **first** element with frequency = `m` |
+| 3 | Since first row is sorted, the first match = **smallest** common element |
+
+### Binary Search Approach
+| Step | Action |
+|------|--------|
+| 1 | For each `num` in **sorted first row** |
+| 2 | Binary search for `num` in every other row using `bisect_left` |
+| 3 | If found in **all rows**, return immediately (first match = smallest) |
+
+> **Key Insight:** We always iterate the **first row** to find candidates, since it's sorted in ascending order — the first valid common element found is guaranteed to be the **smallest**.

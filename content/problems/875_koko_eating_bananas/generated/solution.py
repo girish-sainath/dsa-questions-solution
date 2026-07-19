@@ -1,0 +1,64 @@
+from typing import List
+
+class Solution:
+    def longestMountain(self, arr: List[int]) -> int:
+        n = len(arr)
+        if n < 3:
+            return 0
+        
+        max_length = 0
+        up = 0      # length of ascending sequence ending at current position
+        down = 0    # length of descending sequence ending at current position
+        
+        for i in range(1, n):
+            # If we're going up after going down, or elements are equal
+            # reset both counters (start fresh)
+            if (down > 0 and arr[i] > arr[i - 1]) or arr[i] == arr[i - 1]:
+                up = 0
+                down = 0
+            
+            # Count ascending steps
+            if arr[i] > arr[i - 1]:
+                up += 1
+            
+            # Count descending steps
+            if arr[i] < arr[i - 1]:
+                down += 1
+            
+            # Valid mountain: must have both ascending and descending parts
+            # Total length = up + down + 1 (for the peak element)
+            if up > 0 and down > 0:
+                max_length = max(max_length, up + down + 1)
+        
+        return max_length
+
+
+# Test cases
+if __name__ == "__main__":
+    solution = Solution()
+    
+    # Test case 1
+    arr1 = [2, 1, 4, 7, 3, 2, 5]
+    result1 = solution.longestMountain(arr1)
+    print(f"Input: {arr1}")
+    print(f"Output: {result1}")  # Expected: 5
+    print()
+    
+    # Test case 2
+    arr2 = [2, 2, 2]
+    result2 = solution.longestMountain(arr2)
+    print(f"Input: {arr2}")
+    print(f"Output: {result2}")  # Expected: 0
+    print()
+    
+    # Additional test cases
+    arr3 = [0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]
+    result3 = solution.longestMountain(arr3)
+    print(f"Input: {arr3}")
+    print(f"Output: {result3}")  # Expected: 11
+    print()
+    
+    arr4 = [1, 3, 1, 3, 1]
+    result4 = solution.longestMountain(arr4)
+    print(f"Input: {arr4}")
+    print(f"Output: {result4}")  # Expected: 3

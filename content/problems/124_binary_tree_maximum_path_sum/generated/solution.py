@@ -1,0 +1,116 @@
+from typing import Optional
+
+# Definition for a binary tree node.
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def maxPathSum(self, root: Optional[TreeNode]) -> int:
+        # Initialize global max with negative infinity
+        self.max_sum = float('-inf')
+        
+        def dfs(node: Optional[TreeNode]) -> int:
+            """
+            Returns the maximum path sum starting from this node
+            going down (either left or right, not both).
+            Also updates self.max_sum with the best path through this node.
+            """
+            if not node:
+                return 0
+            
+            # Recursively get max path sum from left and right children
+            # If negative, we take 0 (ignore that subtree)
+            left_gain = max(dfs(node.left), 0)
+            right_gain = max(dfs(node.right), 0)
+            
+            # Path through this node (combining left + node + right)
+            # This is a candidate for the global maximum
+            path_through_node = node.val + left_gain + right_gain
+            
+            # Update global maximum
+            self.max_sum = max(self.max_sum, path_through_node)
+            
+            # Return max path starting from this node going in one direction
+            # (parent can only extend the path in one direction)
+            return node.val + max(left_gain, right_gain)
+        
+        dfs(root)
+        return self.max_sum
+
+
+# ==================== Helper Functions ====================
+
+def build_tree(values: list) -> Optional[TreeNode]:
+    """Build a binary tree from a level-order list (None represents missing nodes)."""
+    if not values or values[0] is None:
+        return None
+    
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    
+    while queue and i < len(values):
+        node = queue.pop(0)
+        
+        # Left child
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        
+        # Right child
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    
+    return root
+
+
+# ==================== Test Cases ====================
+
+def run_tests():
+    solution = Solution()
+    
+    test_cases = [
+        {
+            "input": [1, 2, 3],
+            "expected": 6,
+            "explanation": "Path: 2 -> 1 -> 3"
+        },
+        {
+            "input": [-10, 9, 20, None, None, 15, 7],
+            "expected": 42,
+            "explanation": "Path: 15 -> 20 -> 7"
+        },
+        {
+            "input": [-3],
+            "expected": -3,
+            "explanation": "Single node (negative)"
+        },
+        {
+            "input": [1, -2, -3, 1, 3, -2, None, -1],
+            "expected": 3,
+            "explanation": "Path: 1 -> -2 -> 3 = 2? No, best is 3"
+        },
+        {
+            "input": [5, 4, 8, 11, None, 13, 4, 7, 2, None, None, None, 1],
+            "expected": 48,
+            "explanation": "Path: 7 -> 11 -> 4 -> 5 -> 8 -> 13"
+        }
+    ]
+    
+    for i, test in enumerate(test_cases):
+        root = build_tree(test["input"])
+        result = solution.maxPathSum(root)
+        status = "✅ PASSED" if result == test["expected"] else "❌ FAILED"
+        print(f"Test {i+1}: {status}")
+        print(f"  Input: {test['input']}")
+        print(f"  Expected: {test['expected']}, Got: {result}")
+        print(f"  Explanation: {test['explanation']}\n")
+
+if __name__ == "__main__":
+    run_tests()

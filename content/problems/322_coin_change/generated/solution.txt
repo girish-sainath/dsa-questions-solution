@@ -1,0 +1,104 @@
+# Coin Change Solution
+
+## Approach: Dynamic Programming (Bottom-Up)
+
+The idea is to build up solutions for all amounts from 0 to `amount`:
+- `dp[i]` represents the minimum number of coins needed to make amount `i`
+- For each amount, we try every coin and see if using that coin gives us a better solution
+- Base case: `dp[0] = 0` (0 coins needed to make amount 0)
+
+## Code
+
+```python
+from typing import List
+
+class Solution:
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        # Initialize dp array with infinity (impossible state)
+        # dp[i] = minimum coins needed to make amount i
+        dp = [float('inf')] * (amount + 1)
+        
+        # Base case: 0 coins needed to make amount 0
+        dp[0] = 0
+        
+        # Fill dp array for each amount from 1 to amount
+        for current_amount in range(1, amount + 1):
+            # Try each coin
+            for coin in coins:
+                # If coin value <= current amount, we can use this coin
+                if coin <= current_amount:
+                    # Update dp[current_amount] if using this coin gives better result
+                    # dp[current_amount - coin] + 1 means:
+                    #   use 1 coin of 'coin' denomination +
+                    #   minimum coins needed for remaining amount
+                    dp[current_amount] = min(dp[current_amount], dp[current_amount - coin] + 1)
+        
+        # If dp[amount] is still infinity, amount cannot be made up
+        return dp[amount] if dp[amount] != float('inf') else -1
+
+
+# Test cases
+if __name__ == "__main__":
+    solution = Solution()
+    
+    # Test Case 1: coins = [1,2,5], amount = 11
+    coins1 = [1, 2, 5]
+    amount1 = 11
+    result1 = solution.coinChange(coins1, amount1)
+    print(f"Test 1: coins={coins1}, amount={amount1}")
+    print(f"Output: {result1}")  # Expected: 3
+    print()
+    
+    # Test Case 2: coins = [2], amount = 3
+    coins2 = [2]
+    amount2 = 3
+    result2 = solution.coinChange(coins2, amount2)
+    print(f"Test 2: coins={coins2}, amount={amount2}")
+    print(f"Output: {result2}")  # Expected: -1
+    print()
+    
+    # Test Case 3: coins = [1], amount = 0
+    coins3 = [1]
+    amount3 = 0
+    result3 = solution.coinChange(coins3, amount3)
+    print(f"Test 3: coins={coins3}, amount={amount3}")
+    print(f"Output: {result3}")  # Expected: 0
+```
+
+## Output
+```
+Test 1: coins=[1, 2, 5], amount=11
+Output: 3
+
+Test 2: coins=[2], amount=3
+Output: -1
+
+Test 3: coins=[1], amount=0
+Output: 0
+```
+
+## Complexity Analysis
+
+| Complexity | Value | Explanation |
+|------------|-------|-------------|
+| **Time** | O(amount × n) | For each amount (0 to amount), we iterate through all n coins |
+| **Space** | O(amount) | We store the dp array of size amount + 1 |
+
+## Step-by-step Walkthrough (Example 1)
+
+```
+coins = [1, 2, 5], amount = 11
+
+dp[0]  = 0   (base case)
+dp[1]  = 1   (1 = 1)
+dp[2]  = 1   (2 = 2)
+dp[3]  = 2   (3 = 2+1)
+dp[4]  = 2   (4 = 2+2)
+dp[5]  = 1   (5 = 5)
+dp[6]  = 2   (6 = 5+1)
+dp[7]  = 2   (7 = 5+2)
+dp[8]  = 3   (8 = 5+2+1)
+dp[9]  = 3   (9 = 5+2+2)
+dp[10] = 2   (10 = 5+5)
+dp[11] = 3   (11 = 5+5+1) ✓
+```

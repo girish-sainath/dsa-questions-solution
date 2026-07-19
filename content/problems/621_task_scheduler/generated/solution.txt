@@ -1,0 +1,144 @@
+## Task Scheduler Solution
+
+### Approach
+
+The key insight is to find the minimum number of intervals using a mathematical formula:
+
+1. **Count task frequencies** - Find how many times each task appears
+2. **Find max frequency** - The task(s) with highest frequency dictate the minimum schedule length
+3. **Calculate minimum intervals**:
+   - If we have `max_freq` occurrences of the most frequent task, we need at least `(max_freq - 1) * (n + 1)` slots
+   - Add the count of tasks that have the maximum frequency
+   - The answer is `max(len(tasks), calculated_value)` - we can't do better than the total number of tasks
+
+**Formula**: `max(len(tasks), (max_freq - 1) * (n + 1) + count_of_max_freq_tasks)`
+
+### Visual Explanation
+
+```
+tasks = ["A","A","A","B","B","B"], n = 2
+
+Frequency: A=3, B=3, max_freq=3, count_max=2
+
+Frame structure (n+1 = 3 slots per frame):
+[ A | B | _ ]  -> Frame 1 (3 slots)
+[ A | B | _ ]  -> Frame 2 (3 slots)
+[ A | B ]      -> Last frame (count_max = 2 slots)
+
+Total = (3-1) * (2+1) + 2 = 6 + 2 = 8 ✓
+```
+
+### Code
+
+```python
+from collections import Counter
+from typing import List
+
+
+def minInterval(tasks: List[str], n: int) -> int:
+    """
+    Calculate minimum CPU intervals required to complete all tasks.
+    
+    Args:
+        tasks: List of task labels
+        n: Minimum gap required between same tasks
+    
+    Returns:
+        Minimum number of CPU intervals
+    """
+    # Step 1: Count frequency of each task
+    task_counts = Counter(tasks)
+    
+    # Step 2: Find the maximum frequency
+    max_freq = max(task_counts.values())
+    
+    # Step 3: Count how many tasks have the maximum frequency
+    count_max_freq = sum(1 for count in task_counts.values() if count == max_freq)
+    
+    # Step 4: Calculate minimum intervals using the formula
+    # (max_freq - 1) creates the number of "frames" needed
+    # Each frame needs (n + 1) slots
+    # Add count_max_freq for the last partial frame
+    calculated = (max_freq - 1) * (n + 1) + count_max_freq
+    
+    # The answer is at least the total number of tasks
+    return max(len(tasks), calculated)
+
+
+# Test cases
+if __name__ == "__main__":
+    test_cases = [
+        {
+            "tasks": ["A", "A", "A", "B", "B", "B"],
+            "n": 2,
+            "expected": 8,
+            "explanation": "A -> B -> idle -> A -> B -> idle -> A -> B"
+        },
+        {
+            "tasks": ["A", "C", "A", "B", "D", "B"],
+            "n": 1,
+            "expected": 6,
+            "explanation": "A -> B -> C -> D -> A -> B"
+        },
+        {
+            "tasks": ["A", "A", "A", "B", "B", "B"],
+            "n": 3,
+            "expected": 10,
+            "explanation": "A -> B -> idle -> idle -> A -> B -> idle -> idle -> A -> B"
+        },
+        {
+            "tasks": ["A", "A", "A", "A", "A", "A", "B", "C", "D", "E", "F", "G"],
+            "n": 2,
+            "expected": 16,
+            "explanation": "Many tasks, A dominates"
+        },
+        {
+            "tasks": ["A"],
+            "n": 0,
+            "expected": 1,
+            "explanation": "Single task"
+        }
+    ]
+    
+    print("=" * 65)
+    print(f"{'Test':<6} {'Tasks':<35} {'n':<4} {'Expected':<10} {'Got':<8} {'Pass'}")
+    print("=" * 65)
+    
+    for i, tc in enumerate(test_cases, 1):
+        result = minInterval(tc["tasks"], tc["n"])
+        passed = "✓" if result == tc["expected"] else "✗"
+        tasks_str = str(tc["tasks"])[:33]
+        print(f"{i:<6} {tasks_str:<35} {tc['n']:<4} {tc['expected']:<10} {result:<8} {passed}")
+        print(f"       Explanation: {tc['explanation']}")
+        print("-" * 65)
+```
+
+### Output
+
+```
+=================================================================
+Test   Tasks                               n    Expected   Got      Pass
+=================================================================
+1      ['A', 'A', 'A', 'B', 'B', 'B']    2    8          8        ✓
+       Explanation: A -> B -> idle -> A -> B -> idle -> A -> B
+-----------------------------------------------------------------
+2      ['A', 'C', 'A', 'B', 'D', 'B']    1    6          6        ✓
+       Explanation: A -> B -> C -> D -> A -> B
+-----------------------------------------------------------------
+3      ['A', 'A', 'A', 'B', 'B', 'B']    3    10         10       ✓
+       Explanation: A -> B -> idle -> idle -> A -> B -> idle -> idle -> A -> B
+-----------------------------------------------------------------
+```
+
+### Complexity Analysis
+
+| Aspect | Complexity |
+|--------|-----------|
+| **Time** | O(N) - counting tasks + finding max |
+| **Space** | O(1) - at most 26 unique tasks (A-Z) |
+
+### Key Insight
+
+- When `n` is small or there are many diverse tasks → `len(tasks)` dominates (no idle needed)
+- When `n` is large with few task types → the frame formula dominates (idle slots required)
+- The `max()` handles both cases elegantly

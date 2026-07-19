@@ -1,0 +1,115 @@
+## Solution
+
+### Approach: Sliding Window
+
+The key insight is to use a sliding window where we track the frequency of each character. For a valid window, we need:
+- `window_size - max_frequency <= k`
+
+This means we can replace all non-maximum characters with the most frequent character using at most `k` operations.
+
+### Algorithm:
+1. Use two pointers (`left`, `right`) to define the window
+2. Track character frequencies using a dictionary/array
+3. Track the maximum frequency seen so far
+4. If the window becomes invalid (replacements needed > k), shrink from the left
+5. Keep track of the maximum valid window size
+
+```python
+def characterReplacement(s: str, k: int) -> int:
+    """
+    Find the longest substring with at most k character replacements
+    to make all characters the same.
+    
+    Args:
+        s: Input string of uppercase English letters
+        k: Maximum number of character replacements allowed
+    
+    Returns:
+        Length of the longest valid substring
+    """
+    char_count = {}  # Frequency map for current window
+    max_freq = 0     # Maximum frequency of any single character in window
+    left = 0         # Left pointer of sliding window
+    max_length = 0   # Result: maximum valid window length
+    
+    for right in range(len(s)):
+        # Add current character to window
+        char_count[s[right]] = char_count.get(s[right], 0) + 1
+        
+        # Update max frequency in current window
+        max_freq = max(max_freq, char_count[s[right]])
+        
+        # Current window size
+        window_size = right - left + 1
+        
+        # Check if window is valid: characters to replace <= k
+        # characters_to_replace = window_size - max_freq
+        if window_size - max_freq > k:
+            # Shrink window from the left
+            char_count[s[left]] -= 1
+            left += 1
+        
+        # Update maximum length (window size after potential shrink)
+        max_length = max(max_length, right - left + 1)
+    
+    return max_length
+
+
+# Test cases
+if __name__ == "__main__":
+    # Example 1
+    s1, k1 = "ABAB", 2
+    result1 = characterReplacement(s1, k1)
+    print(f"Input: s = '{s1}', k = {k1}")
+    print(f"Output: {result1}")  # Expected: 4
+    print()
+    
+    # Example 2
+    s2, k2 = "AABABBA", 1
+    result2 = characterReplacement(s2, k2)
+    print(f"Input: s = '{s2}', k = {k2}")
+    print(f"Output: {result2}")  # Expected: 4
+    print()
+    
+    # Edge cases
+    s3, k3 = "AAAA", 2
+    result3 = characterReplacement(s3, k3)
+    print(f"Input: s = '{s3}', k = {k3}")
+    print(f"Output: {result3}")  # Expected: 4
+    print()
+    
+    s4, k4 = "ABCDE", 1
+    result4 = characterReplacement(s4, k4)
+    print(f"Input: s = '{s4}', k = {k4}")
+    print(f"Output: {result4}")  # Expected: 2
+```
+
+### Output:
+```
+Input: s = 'ABAB', k = 2
+Output: 4
+
+Input: s = 'AABABBA', k = 1
+Output: 4
+
+Input: s = 'AAAA', k = 2
+Output: 4
+
+Input: s = 'ABCDE', k = 1
+Output: 2
+```
+
+### Complexity Analysis:
+
+| Complexity | Value | Explanation |
+|------------|-------|-------------|
+| **Time** | O(n) | Each character is visited at most twice (once by right, once by left pointer) |
+| **Space** | O(1) | At most 26 characters in the frequency map |
+
+### Key Observations:
+
+1. **`max_freq` never decreases**: Even if the actual maximum frequency decreases when we shrink the window, we don't update `max_freq` downward. This is correct because we're only interested in finding a **longer** window than what we've already found.
+
+2. **Window shrinks by exactly 1**: When invalid, we only move `left` by one step (not until valid again), because any valid window would need to be larger than our current best to matter.
+
+3. **Validity condition**: `window_size - max_freq <= k` — the number of characters we need to replace equals the window size minus the count of the most frequent character.

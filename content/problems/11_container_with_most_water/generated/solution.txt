@@ -1,0 +1,155 @@
+# Container With Most Water
+
+## Problem Understanding
+We need to find two vertical lines that, together with the x-axis, can hold the maximum amount of water. The water held between two lines is determined by:
+- **Width**: The distance between the two lines (difference in indices)
+- **Height**: The minimum of the two line heights (water can only fill up to the shorter line)
+
+**Formula**: `area = min(height[left], height[right]) * (right - left)`
+
+## Approach: Two Pointer Technique
+
+### Key Insight
+- Start with the widest container (left pointer at 0, right pointer at end)
+- Move the pointer pointing to the **shorter line** inward
+- This is because moving the taller line inward can only decrease or maintain the width while the height is already limited by the shorter line
+- We keep track of the maximum area found
+
+### Why Move the Shorter Line?
+- Current area is limited by `min(height[left], height[right])`
+- Moving the taller line inward: width decreases AND height is still limited by shorter line → area definitely decreases
+- Moving the shorter line inward: width decreases BUT height might increase → area might increase
+
+## Solution
+
+```python
+def maxArea(height):
+    """
+    Find the maximum water container using two pointer technique.
+    
+    Args:
+        height: List of integers representing vertical line heights
+    
+    Returns:
+        Maximum amount of water a container can store
+    """
+    left = 0
+    right = len(height) - 1
+    max_water = 0
+    
+    while left < right:
+        # Calculate current area
+        width = right - left
+        current_height = min(height[left], height[right])
+        current_area = width * current_height
+        
+        # Update maximum water
+        max_water = max(max_water, current_area)
+        
+        # Move the pointer with the shorter line
+        if height[left] <= height[right]:
+            left += 1
+        else:
+            right -= 1
+    
+    return max_water
+
+
+# Test Cases
+def run_tests():
+    test_cases = [
+        {
+            "input": [1, 8, 6, 2, 5, 4, 8, 3, 7],
+            "expected": 49,
+            "description": "Standard case with multiple heights"
+        },
+        {
+            "input": [1, 1],
+            "expected": 1,
+            "description": "Minimum case with two equal lines"
+        },
+        {
+            "input": [4, 3, 2, 1, 4],
+            "expected": 16,
+            "description": "Same height at both ends"
+        },
+        {
+            "input": [1, 2, 1],
+            "expected": 2,
+            "description": "Three elements"
+        },
+        {
+            "input": [1, 8, 100, 2, 100, 4, 8, 3, 7],
+            "expected": 200,
+            "description": "Two tall lines in the middle"
+        }
+    ]
+    
+    print("=" * 55)
+    print("Testing Container With Most Water")
+    print("=" * 55)
+    
+    all_passed = True
+    for i, test in enumerate(test_cases, 1):
+        result = maxArea(test["input"])
+        status = "✅ PASS" if result == test["expected"] else "❌ FAIL"
+        
+        if result != test["expected"]:
+            all_passed = False
+        
+        print(f"\nTest {i}: {test['description']}")
+        print(f"  Input:    {test['input']}")
+        print(f"  Expected: {test['expected']}")
+        print(f"  Got:      {result}")
+        print(f"  Status:   {status}")
+    
+    print("\n" + "=" * 55)
+    print(f"Overall: {'All tests passed! 🎉' if all_passed else 'Some tests failed! ❌'}")
+    print("=" * 55)
+
+
+run_tests()
+```
+
+## Output
+```
+=======================================================
+Testing Container With Most Water
+=======================================================
+
+Test 1: Standard case with multiple heights
+  Input:    [1, 8, 6, 2, 5, 4, 8, 3, 7]
+  Expected: 49
+  Got:      49
+  Status:   ✅ PASS
+
+Test 2: Minimum case with two equal lines
+  Input:    [1, 1]
+  Expected: 1
+  Got:      1
+  Status:   ✅ PASS
+
+Test 3: Same height at both ends
+  Input:    [4, 3, 2, 1, 4]
+  Expected: 16
+  Got:      16
+  Status:   ✅ PASS
+
+Test 4: Three elements
+  Input:    [1, 2, 1]
+  Expected: 2
+  Got:      2
+  Status:   ✅ PASS
+
+Test 5: Two tall lines in the middle
+  Input:    [1, 8, 100, 2, 100, 4, 8, 3, 7]
+  Expected: 200
+  Got:      200
+  Status:   ✅ PASS
+```
+
+## Complexity Analysis
+| | Complexity |
+|---|---|
+| **Time** | O(n) - Single pass with two pointers |
+| **Space** | O(1) - Only using constant extra space |

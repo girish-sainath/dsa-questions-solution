@@ -1,0 +1,257 @@
+## Clone Graph Solution
+
+### Approach
+We'll use **BFS (Breadth-First Search)** with a hash map to clone the graph:
+1. Use a dictionary to map original nodes to their clones
+2. BFS to traverse all nodes
+3. For each node, create a clone and copy all neighbor relationships
+
+### Code
+
+```python
+from typing import Optional
+from collections import deque
+
+# Definition for a Node
+class Node:
+    def __init__(self, val=0, neighbors=None):
+        self.val = val
+        self.neighbors = neighbors if neighbors is not None else []
+
+class Solution:
+    def cloneGraph(self, node: Optional['Node']) -> Optional['Node']:
+        """
+        Clone a graph using BFS traversal with a hash map.
+        
+        Args:
+            node: Reference to a node in the original graph
+            
+        Returns:
+            Reference to the corresponding node in the cloned graph
+        """
+        # Edge case: empty graph
+        if not node:
+            return None
+        
+        # Hash map to store mapping from original node to cloned node
+        cloned_nodes = {}
+        
+        # Create clone of the starting node
+        cloned_nodes[node] = Node(node.val)
+        
+        # BFS queue starting with the given node
+        queue = deque([node])
+        
+        while queue:
+            current = queue.popleft()
+            
+            # Process all neighbors of current node
+            for neighbor in current.neighbors:
+                # If neighbor hasn't been cloned yet
+                if neighbor not in cloned_nodes:
+                    # Create a clone for the neighbor
+                    cloned_nodes[neighbor] = Node(neighbor.val)
+                    # Add to queue to process its neighbors later
+                    queue.append(neighbor)
+                
+                # Add the cloned neighbor to current node's clone neighbors list
+                cloned_nodes[current].neighbors.append(cloned_nodes[neighbor])
+        
+        # Return the clone of the starting node
+        return cloned_nodes[node]
+
+
+# ==================== Helper Functions for Testing ====================
+
+def build_graph(adjList: list) -> Optional[Node]:
+    """Build graph from adjacency list and return reference to first node."""
+    if not adjList:
+        return None
+    
+    # Create all nodes first
+    nodes = [Node(i + 1) for i in range(len(adjList))]
+    
+    # Add neighbors
+    for i, neighbors in enumerate(adjList):
+        for neighbor_val in neighbors:
+            nodes[i].neighbors.append(nodes[neighbor_val - 1])
+    
+    return nodes[0] if nodes else None
+
+
+def graph_to_adjList(node: Optional[Node]) -> list:
+    """Convert graph back to adjacency list for verification."""
+    if not node:
+        return []
+    
+    visited = {}
+    queue = deque([node])
+    visited[node.val] = node
+    
+    while queue:
+        current = queue.popleft()
+        for neighbor in current.neighbors:
+            if neighbor.val not in visited:
+                visited[neighbor.val] = neighbor
+                queue.append(neighbor)
+    
+    # Build adjacency list sorted by node value
+    max_val = max(visited.keys())
+    adjList = []
+    for i in range(1, max_val + 1):
+        if i in visited:
+            adjList.append(sorted([n.val for n in visited[i].neighbors]))
+    
+    return adjList
+
+
+def verify_deep_copy(original: Optional[Node], clone: Optional[Node]) -> bool:
+    """Verify that clone is a deep copy (different objects, same structure)."""
+    if original is None and clone is None:
+        return True
+    if original is None or clone is None:
+        return False
+    
+    visited_original = set()
+    queue = deque([(original, clone)])
+    
+    while queue:
+        orig_node, clone_node = queue.popleft()
+        
+        # Verify they are different objects with same value
+        if orig_node is clone_node:
+            return False  # Same object reference - not a deep copy!
+        if orig_node.val != clone_node.val:
+            return False  # Different values
+        
+        if orig_node.val in visited_original:
+            continue
+        visited_original.add(orig_node.val)
+        
+        # Check neighbors
+        if len(orig_node.neighbors) != len(clone_node.neighbors):
+            return False
+        
+        for o_neighbor, c_neighbor in zip(
+            sorted(orig_node.neighbors, key=lambda x: x.val),
+            sorted(clone_node.neighbors, key=lambda x: x.val)
+        ):
+            queue.append((o_neighbor, c_neighbor))
+    
+    return True
+
+
+# ==================== Test Cases ====================
+
+def run_tests():
+    solution = Solution()
+    
+    test_cases = [
+        {
+            "adjList": [[2, 4], [1, 3], [2, 4], [1, 3]],
+            "expected": [[2, 4], [1, 3], [2, 4], [1, 3]],
+            "description": "4-node connected graph"
+        },
+        {
+            "adjList": [[]],
+            "expected": [[]],
+            "description": "Single node with no neighbors"
+        },
+        {
+            "adjList": [],
+            "expected": [],
+            "description": "Empty graph"
+        },
+        {
+            "adjList": [[2], [1]],
+            "expected": [[2], [1]],
+            "description": "Two nodes connected"
+        },
+    ]
+    
+    print("=" * 60)
+    print("Clone Graph - Test Results")
+    print("=" * 60)
+    
+    for i, test in enumerate(test_cases, 1):
+        adj_list = test["adjList"]
+        expected = test["expected"]
+        description = test["description"]
+        
+        # Build original graph
+        original_node = build_graph(adj_list)
+        
+        # Clone the graph
+        cloned_node = solution.cloneGraph(original_node)
+        
+        # Convert cloned graph back to adjacency list
+        result = graph_to_adjList(cloned_node)
+        
+        # Verify structure matches
+        structure_match = (result == expected)
+        
+        # Verify it's a true deep copy
+        is_deep_copy = verify_deep_copy(original_node, cloned_node)
+        
+        status = "✅ PASS" if (structure_match and is_deep_copy) else "❌ FAIL"
+        
+        print(f"\nTest {i}: {description}")
+        print(f"  Input:      {adj_list}")
+        print(f"  Expected:   {expected}")
+        print(f"  Got:        {result}")
+        print(f"  Deep Copy:  {is_deep_copy}")
+        print(f"  Status:     {status}")
+    
+    print("\n" + "=" * 60)
+
+
+if __name__ == "__main__":
+    run_tests()
+```
+
+### Output
+```
+============================================================
+Clone Graph - Test Results
+============================================================
+
+Test 1: 4-node connected graph
+  Input:      [[2, 4], [1, 3], [2, 4], [1, 3]]
+  Expected:   [[2, 4], [1, 3], [2, 4], [1, 3]]
+  Got:        [[2, 4], [1, 3], [2, 4], [1, 3]]
+  Deep Copy:  True
+  Status:     ✅ PASS
+
+Test 2: Single node with no neighbors
+  Input:      [[]]
+  Expected:   [[]]
+  Got:        [[]]
+  Deep Copy:  True
+  Status:     ✅ PASS
+
+Test 3: Empty graph
+  Input:      []
+  Expected:   []
+  Got:        []
+  Deep Copy:  True
+  Status:     ✅ PASS
+
+Test 4: Two nodes connected
+  Input:      [[2], [1]]
+  Expected:   [[2], [1]]
+  Got:        [[2], [1]]
+  Deep Copy:  True
+  Status:     ✅ PASS
+```
+
+### Complexity Analysis
+
+| Complexity | Value | Reason |
+|------------|-------|--------|
+| **Time** | O(V + E) | Visit each vertex and edge once |
+| **Space** | O(V) | Hash map stores V cloned nodes + BFS queue |
+
+### Key Insights
+- **Hash Map** (`cloned_nodes`) prevents re-cloning nodes and handles **cycles** in the graph
+- **BFS** ensures we visit all reachable nodes level by level
+- We first create the clone, then link neighbors — this correctly handles **back edges** to already-visited nodes

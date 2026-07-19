@@ -1,0 +1,98 @@
+# Group Anagrams Solution
+
+## Approach
+
+The key insight is that **anagrams have the same characters when sorted**. We can use the sorted version of each string as a key to group anagrams together in a hash map.
+
+### Algorithm:
+1. Create a dictionary where keys are sorted strings
+2. For each string, sort its characters to get the key
+3. Append the original string to the corresponding group
+4. Return all values from the dictionary
+
+## Code
+
+```python
+from collections import defaultdict
+from typing import List
+
+def groupAnagrams(strs: List[str]) -> List[List[str]]:
+    """
+    Groups anagrams together from a list of strings.
+    
+    Args:
+        strs: List of strings to group
+        
+    Returns:
+        List of groups where each group contains anagrams
+    """
+    # Dictionary to store groups: sorted_string -> list of anagrams
+    anagram_groups = defaultdict(list)
+    
+    for s in strs:
+        # Sort the string to create a unique key for all its anagrams
+        sorted_key = tuple(sorted(s))  # tuple is hashable (can be used as dict key)
+        anagram_groups[sorted_key].append(s)
+    
+    # Return all groups as a list of lists
+    return list(anagram_groups.values())
+
+
+# ==================== Test Cases ====================
+if __name__ == "__main__":
+    # Test Case 1
+    strs1 = ["eat", "tea", "tan", "ate", "nat", "bat"]
+    result1 = groupAnagrams(strs1)
+    print(f"Input:  {strs1}")
+    print(f"Output: {result1}")
+    print()
+
+    # Test Case 2
+    strs2 = [""]
+    result2 = groupAnagrams(strs2)
+    print(f"Input:  {strs2}")
+    print(f"Output: {result2}")
+    print()
+
+    # Test Case 3
+    strs3 = ["a"]
+    result3 = groupAnagrams(strs3)
+    print(f"Input:  {strs3}")
+    print(f"Output: {result3}")
+    print()
+
+    # Additional Test Case - all same anagrams
+    strs4 = ["abc", "bca", "cab", "xyz", "zyx"]
+    result4 = groupAnagrams(strs4)
+    print(f"Input:  {strs4}")
+    print(f"Output: {result4}")
+```
+
+## Output
+
+```
+Input:  ['eat', 'tea', 'tan', 'ate', 'nat', 'bat']
+Output: [['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]
+
+Input:  ['']
+Output: [['']]
+
+Input:  ['a']
+Output: [['a']]
+
+Input:  ['abc', 'bca', 'cab', 'xyz', 'zyx']
+Output: [['abc', 'bca', 'cab'], ['xyz', 'zyx']]
+```
+
+## Complexity Analysis
+
+| Complexity | Value | Explanation |
+|------------|-------|-------------|
+| **Time** | O(n × k log k) | `n` = number of strings, `k` = max string length (sorting each string) |
+| **Space** | O(n × k) | Storing all strings in the hash map |
+
+## Key Points
+
+- **`sorted(s)`** returns a list of characters → we convert to `tuple` since lists aren't hashable
+- **`defaultdict(list)`** auto-initializes empty lists for new keys, avoiding `KeyError`
+- Anagrams will **always produce the same sorted key**, making grouping straightforward
