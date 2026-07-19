@@ -226,5 +226,5 @@ uv.lock
 # Mac
 **.DS_Store
 
-content/problems/
+#content/problems/
 content/lists/complete_unsorted/
