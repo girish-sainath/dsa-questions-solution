@@ -467,5 +467,12 @@
     "slug": "lru-cache",
     "difficulty": "Medium",
     "tags": ["Hash Table", "Doubly-Linked List"]
+  },
+  {
+    "id": "460",
+    "title": "LFU Cache",
+    "slug": "lfu-cache",
+    "difficulty": "Hard",
+    "tags": ["Hash Table", "Doubly-Linked List"]
   }
 ]

@@ -1,0 +1,145 @@
+from collections import defaultdict, OrderedDict
+
+
+class LFUCache:
+    def __init__(self, capacity: int):
+        """
+        Initialize LFU Cache with given capacity.
+        
+        :param capacity: Maximum number of items the cache can hold
+        """
+        self.capacity = capacity
+        self.size = 0
+        self.min_freq = 0
+        
+        # Maps key -> [value, frequency]
+        self.key_map = {}
+        
+        # Maps frequency -> OrderedDict{key: None}
+        # OrderedDict preserves insertion order for LRU tie-breaking
+        self.freq_map = defaultdict(OrderedDict)
+    
+    def _update(self, key: int) -> None:
+        """
+        Update the frequency of a key.
+        Moves the key from its current frequency bucket to the next one.
+        
+        :param key: The key to update
+        """
+        value, freq = self.key_map[key]
+        
+        # Remove from current frequency bucket
+        del self.freq_map[freq][key]
+        
+        # If the current freq bucket is empty and it was the min frequency,
+        # increment min_freq
+        if not self.freq_map[freq] and freq == self.min_freq:
+            self.min_freq += 1
+        
+        # Update key's frequency
+        new_freq = freq + 1
+        self.key_map[key] = [value, new_freq]
+        
+        # Add to new frequency bucket (at the end = most recently used)
+        self.freq_map[new_freq][key] = None
+    
+    def get(self, key: int) -> int:
+        """
+        Get the value of the key if it exists, otherwise return -1.
+        
+        :param key: The key to look up
+        :return: Value associated with key, or -1 if not found
+        """
+        if key not in self.key_map:
+            return -1
+        
+        # Update frequency before returning value
+        self._update(key)
+        return self.key_map[key][0]
+    
+    def put(self, key: int, value: int) -> None:
+        """
+        Insert or update a key-value pair in the cache.
+        Evicts LFU key (LRU for ties) if at capacity.
+        
+        :param key: The key to insert/update
+        :param value: The value to associate with the key
+        """
+        if self.capacity <= 0:
+            return
+        
+        if key in self.key_map:
+            # Key exists: update value and increment frequency
+            self.key_map[key][0] = value
+            self._update(key)
+        else:
+            # New key: check if we need to evict
+            if self.size >= self.capacity:
+                # Evict the LFU key (LRU among LFU keys)
+                # The first item in min_freq bucket is the LRU
+                evict_key, _ = self.freq_map[self.min_freq].popitem(last=False)
+                del self.key_map[evict_key]
+                self.size -= 1
+            
+            # Insert new key with frequency 1
+            self.key_map[key] = [value, 1]
+            self.freq_map[1][key] = None
+            self.min_freq = 1  # New key always has frequency 1
+            self.size += 1
+
+
+# Test the implementation
+def test_lfu_cache():
+    print("Test Case 1:")
+    lfu = LFUCache(2)
+    
+    operations = [
+        ("put", 1, 1),   # cache=[1,_], cnt(1)=1
+        ("put", 2, 2),   # cache=[2,1], cnt(2)=1, cnt(1)=1
+        ("get", 1),      # return 1, cnt(1)=2
+        ("put", 3, 3),   # evict key 2, cache=[3,1]
+        ("get", 2),      # return -1 (not found)
+        ("get", 3),      # return 3, cnt(3)=2
+        ("put", 4, 4),   # evict key 1 (LRU among LFU), cache=[4,3]
+        ("get", 1),      # return -1 (not found)
+        ("get", 3),      # return 3
+        ("get", 4),      # return 4
+    ]
+    
+    expected = [None, None, 1, None, -1, 3, None, -1, 3, 4]
+    results = []
+    
+    for op in operations:
+        if op[0] == "put":
+            result = lfu.put(op[1], op[2])
+            results.append(result)
+        else:
+            result = lfu.get(op[1])
+            results.append(result)
+    
+    print(f"Results:  {results}")
+    print(f"Expected: {expected}")
+    print(f"Pass: {results == expected}\n")
+    
+    print("Test Case 2 - Edge case with capacity 1:")
+    lfu2 = LFUCache(1)
+    lfu2.put(1, 1)
+    print(f"get(1) = {lfu2.get(1)}")   # 1
+    lfu2.put(2, 2)                       # evicts key 1
+    print(f"get(1) = {lfu2.get(1)}")   # -1
+    print(f"get(2) = {lfu2.get(2)}")   # 2
+    
+    print("\nTest Case 3 - Update existing key:")
+    lfu3 = LFUCache(2)
+    lfu3.put(1, 1)
+    lfu3.put(2, 2)
+    lfu3.get(1)        # cnt(1)=2
+    lfu3.put(2, 20)    # update value, cnt(2)=2
+    lfu3.put(3, 3)     # both cnt=2, evict LRU which is key 1
+    print(f"get(1) = {lfu3.get(1)}")   # -1 (evicted)
+    print(f"get(2) = {lfu3.get(2)}")   # 20
+    print(f"get(3) = {lfu3.get(3)}")   # 3
+
+
+if __name__ == "__main__":
+    test_lfu_cache()
