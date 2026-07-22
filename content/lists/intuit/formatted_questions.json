@@ -446,5 +446,26 @@
     "slug": "n-queens",
     "difficulty": "Hard",
     "tags": ["Array", "Backtracking"]
+  },
+  {
+    "id": "929",
+    "title": "Unique Email Addresses",
+    "slug": "unique-email-addresses",
+    "difficulty": "Easy",
+    "tags": []
+  },
+  {
+    "id": "253",
+    "title": "Meeting Rooms II",
+    "slug": "meeting-rooms-ii",
+    "difficulty": "Medium",
+    "tags": []
+  },
+  {
+    "id": "146",
+    "title": "LRU Cache",
+    "slug": "lru-cache",
+    "difficulty": "Medium",
+    "tags": ["Hash Table", "Doubly-Linked List"]
   }
 ]

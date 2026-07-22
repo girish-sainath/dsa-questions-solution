@@ -1,0 +1,132 @@
+## Solution
+
+### Approach
+The key insight is that two strings are special-equivalent if and only if:
+- Their characters at **even indices** are the same (as a multiset)
+- Their characters at **odd indices** are the same (as a multiset)
+
+This is because we can freely rearrange even-indexed characters among themselves and odd-indexed characters among themselves.
+
+So we can create a **signature** for each string by:
+1. Sorting the characters at even indices
+2. Sorting the characters at odd indices
+3. Combining them into a tuple
+
+Then we count the number of **unique signatures** - each unique signature represents one group.
+
+### Code
+
+```python
+from typing import List
+
+class Solution:
+    def numSpecialEquivGroups(self, words: List[str]) -> int:
+        """
+        Count groups of special-equivalent strings.
+        
+        Two strings are special-equivalent if their even-indexed characters
+        form the same multiset AND their odd-indexed characters form the same multiset.
+        
+        Args:
+            words: List of strings of the same length
+            
+        Returns:
+            Number of groups of special-equivalent strings
+        """
+        signatures = set()
+        
+        for word in words:
+            # Extract and sort even-indexed characters
+            even_chars = sorted(word[i] for i in range(0, len(word), 2))
+            
+            # Extract and sort odd-indexed characters
+            odd_chars = sorted(word[i] for i in range(1, len(word), 2))
+            
+            # Create a unique signature as a tuple of tuples
+            signature = (tuple(even_chars), tuple(odd_chars))
+            
+            signatures.add(signature)
+        
+        return len(signatures)
+
+
+# Test cases
+def main():
+    solution = Solution()
+    
+    # Test Case 1
+    words1 = ["abcd", "cdab", "cbad", "xyzz", "zzxy", "zzyx"]
+    result1 = solution.numSpecialEquivGroups(words1)
+    print(f"Input: {words1}")
+    print(f"Output: {result1}")
+    print(f"Expected: 3")
+    print()
+    
+    # Test Case 2
+    words2 = ["abc", "acb", "bac", "bca", "cab", "cba"]
+    result2 = solution.numSpecialEquivGroups(words2)
+    print(f"Input: {words2}")
+    print(f"Output: {result2}")
+    print(f"Expected: 3")
+    print()
+    
+    # Additional Test Case - Single word
+    words3 = ["hello"]
+    result3 = solution.numSpecialEquivGroups(words3)
+    print(f"Input: {words3}")
+    print(f"Output: {result3}")
+    print(f"Expected: 1")
+    print()
+    
+    # Additional Test Case - All same words
+    words4 = ["aa", "aa", "aa"]
+    result4 = solution.numSpecialEquivGroups(words4)
+    print(f"Input: {words4}")
+    print(f"Output: {result4}")
+    print(f"Expected: 1")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Output
+```
+Input: ['abcd', 'cdab', 'cbad', 'xyzz', 'zzxy', 'zzyx']
+Output: 3
+Expected: 3
+
+Input: ['abc', 'acb', 'bac', 'bca', 'cab', 'cba']
+Output: 3
+Expected: 3
+
+Input: ['hello']
+Output: 1
+Expected: 1
+
+Input: ['aa', 'aa', 'aa']
+Output: 1
+Expected: 1
+```
+
+### Explanation
+
+| Step | Description |
+|------|-------------|
+| 1 | For each word, separate characters by even/odd indices |
+| 2 | Sort each group independently (since swaps can create any permutation) |
+| 3 | Create a signature tuple `(sorted_even_chars, sorted_odd_chars)` |
+| 4 | Add to a set (duplicates automatically removed) |
+| 5 | Return the size of the set |
+
+**Example walkthrough for `"abcd"`:**
+- Even indices (0,2): `['a','c']` → sorted: `['a','c']`
+- Odd indices (1,3): `['b','d']` → sorted: `['b','d']`
+- Signature: `(('a','c'), ('b','d'))`
+
+**`"cdab"` gives the same signature:**
+- Even indices (0,2): `['c','a']` → sorted: `['a','c']`
+- Odd indices (1,3): `['d','b']` → sorted: `['b','d']`
+- Signature: `(('a','c'), ('b','d'))` ✓ Same group!
+
+**Time Complexity:** O(n × m log m) where n = number of words, m = word length  
+**Space Complexity:** O(n × m) for storing signatures

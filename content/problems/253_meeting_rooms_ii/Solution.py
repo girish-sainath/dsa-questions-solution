@@ -7,7 +7,7 @@ class Solution:
 
     """
     @staticmethod
-    def lru_cache():
+    def meeting_rooms_ii():
         """
 
         """

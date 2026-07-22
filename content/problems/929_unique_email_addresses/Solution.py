@@ -7,7 +7,7 @@ class Solution:
 
     """
     @staticmethod
-    def lru_cache():
+    def unique_email_addresses():
         """
 
         """
