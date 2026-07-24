@@ -20,7 +20,7 @@ def main():
     input_list = []
 
     solution = Solution()
-    method_name = ''
+    method_name = 'unique_email_addresses'
 
     print(f'Calling method "{method_name}"')
     for input_item in input_list:

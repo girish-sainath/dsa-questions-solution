@@ -7,7 +7,7 @@ class Solution:
 
     """
     @staticmethod
-    def house_robber():
+    def n_queens():
         """
 
         """
@@ -20,7 +20,7 @@ def main():
     input_list = []
 
     solution = Solution()
-    method_name = 'house_robber'
+    method_name = 'n_queens'
 
     print(f'Calling method "{method_name}"')
     for input_item in input_list:
